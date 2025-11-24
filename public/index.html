@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css" />
+    <title>Image Converter - Transform Your Images</title>
+</head>
+<body>
+    
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-image"></i> Image Converter</h1>
+            <p class="subtitle">Resize, convert, and optimize your images with ease</p>
+        </header>
+
+        <main>
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <h3>Drag & Drop your image here</h3>
+                        <p>or click to browse</p>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                    </div>
+                </div>
+                
+                <div class="preview-section" id="previewSection" style="display: none;">
+                    <div class="preview-container">
+                        <h3>Original Image</h3>
+                        <div class="image-wrapper">
+                            <img id="previewImage" alt="Preview">
+                        </div>
+                        <div class="image-info">
+                            <span id="imageName"></span>
+                            <span id="imageSize"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-section" id="controlsSection" style="display: none;">
+                <h2>Conversion Settings</h2>
+                
+                <div class="control-group">
+                    <label for="formatSelect">
+                        <span class="label-text">Output Format</span>
+                        <span class="label-icon">📄</span>
+                    </label>
+                    <select id="formatSelect" class="control-input">
+                        <option value="jpeg">JPEG</option>
+                        <option value="png">PNG</option>
+                        <option value="webp">WebP</option>
+                        <option value="avif">AVIF</option>
+                        <option value="tiff">TIFF</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="widthInput">
+                        <span class="label-text">Width (px)</span>
+                        <span class="label-icon">↔️</span>
+                    </label>
+                    <div class="input-with-reset">
+                        <input type="number" id="widthInput" class="control-input" min="1" placeholder="Auto">
+                        <button type="button" class="reset-btn" id="resetWidth" title="Reset to original">↺</button>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="widthSlider" class="slider" min="50" max="4000" step="50" value="800">
+                        <div class="slider-labels">
+                            <span>50px</span>
+                            <span id="widthValue">800px</span>
+                            <span>4000px</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="qualityInput">
+                        <span class="label-text">Quality</span>
+                        <span class="label-icon">⭐</span>
+                    </label>
+                    <div class="input-with-reset">
+                        <input type="number" id="qualityInput" class="control-input" min="0.1" max="1" step="0.1" value="0.9">
+                        <span class="quality-percent">90%</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="qualitySlider" class="slider" min="0.1" max="1" step="0.05" value="0.9">
+                        <div class="slider-labels">
+                            <span>10%</span>
+                            <span id="qualityValue">90%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-primary" id="convertBtn">
+                        <span class="btn-icon">✨</span>
+                        <span>Convert Image</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="resetBtn">
+                        <span class="btn-icon">🔄</span>
+                        <span>Reset</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading-section" id="loadingSection" style="display: none;">
+                <div class="spinner"></div>
+                <p>Processing your image...</p>
+            </div>
+
+            <div class="error-section" id="errorSection" style="display: none;">
+                <div class="error-message">
+                    <span class="error-icon">⚠️</span>
+                    <span id="errorText"></span>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by Sharp • Fast & Reliable Image Processing</p>
+        </footer>
+    </div>
+
+    <script src="./js/script.js"></script>
+</body>
+</html>
