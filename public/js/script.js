@@ -9,6 +9,22 @@ const controlsSection = document.getElementById('controlsSection');
 const loadingSection = document.getElementById('loadingSection');
 const errorSection = document.getElementById('errorSection');
 const errorText = document.getElementById('errorText');
+const authSection = document.getElementById('authSection');
+const userGreeting = document.getElementById('userGreeting');
+const logoutBtn = document.getElementById('logoutBtn');
+const body = document.body;
+
+// Auth elements
+const loginForm = document.getElementById('loginForm');
+const signupForm = document.getElementById('signupForm');
+const loginTab = document.getElementById('loginTab');
+const signupTab = document.getElementById('signupTab');
+const authError = document.getElementById('authError');
+const loginEmail = document.getElementById('loginEmail');
+const loginPassword = document.getElementById('loginPassword');
+const signupName = document.getElementById('signupName');
+const signupEmail = document.getElementById('signupEmail');
+const signupPassword = document.getElementById('signupPassword');
 
 // Control elements
 const formatSelect = document.getElementById('formatSelect');
@@ -24,24 +40,30 @@ const convertBtn = document.getElementById('convertBtn');
 const resetBtn = document.getElementById('resetBtn');
 const navToggle = document.getElementById('navToggle');
 const navMenu = document.getElementById('navMenu');
-const navLinks = document.querySelectorAll('.nav-link')
+const navLinks = document.querySelectorAll('.nav-link');
+const navbar = document.querySelector('.navbar');
 
-// nav toggle
-navToggle.addEventListener('click', function () {
-    navMenu.classList.toggle('active');
+const TOKEN_KEY = 'ic_auth_token';
 
-    const spans = navToggle.querySelectorAll('span');
-    if (navMenu.classList.contains('active')) {
-        spans[0].style.transform = 'rotate(45deg) translateY(9px)';
-        spans[1].style.opacity = '0';
-        spans[2].style.transform = 'rotate(-45deg) translateY(-9px)';
-    } else {
-        spans[0].style.transform = '';
-        spans[1].style.opacity = '';
-        spans[2].style.transform = '';
-    }
-});
+// Navbar toggle functionality
+if (navToggle && navMenu) {
+    navToggle.addEventListener('click', function () {
+        navMenu.classList.toggle('active');
 
+        const spans = navToggle.querySelectorAll('span');
+        if (navMenu.classList.contains('active')) {
+            spans[0].style.transform = 'rotate(45deg) translateY(9px)';
+            spans[1].style.opacity = '0';
+            spans[2].style.transform = 'rotate(-45deg) translateY(-9px)';
+        } else {
+            spans[0].style.transform = '';
+            spans[1].style.opacity = '';
+            spans[2].style.transform = '';
+        }
+    });
+}
+
+// Smooth scroll for nav links
 navLinks.forEach(link => {
     link.addEventListener('click', function (e) {
         e.preventDefault();
@@ -57,37 +79,44 @@ navLinks.forEach(link => {
                 behavior: 'smooth'
             });
 
-            if (navMenu.classList.contains('active')) {
+            // Close mobile menu if open
+            if (navMenu && navMenu.classList.contains('active')) {
                 navMenu.classList.remove('active');
-                const spans = navToggle.querySelectorAll('span');
-                spans[0].style.transform = '';
-                spans[1].style.opacity = '';
-                spans[2].style.transform = '';
+                if (navToggle) {
+                    const spans = navToggle.querySelectorAll('span');
+                    spans[0].style.transform = '';
+                    spans[1].style.opacity = '';
+                    spans[2].style.transform = '';
+                }
             }
         }
     });
 });
+
+// Navbar hide/show on scroll
 let lastScrollTop = 0;
-const navbar = document.querySelector('.navbar');
+if (navbar) {
+    window.addEventListener('scroll', function () {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-window.addEventListener('scroll', function () {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+            navbar.style.transform = 'translateY(-100%)';
+        } else {
+            navbar.style.transform = 'translateY(0)';
+        }
 
-    if (scrollTop > lastScrollTop && scrollTop > 100) {
-        navbar.style.transform = 'translateY(-100%)';
-    } else {
-        navbar.style.transform = 'translateY(0)';
-    }
-
-    lastScrollTop = scrollTop;
-});
+        lastScrollTop = scrollTop;
+    });
+}
 
 // State
 let currentFile = null;
 let originalWidth = null;
+let currentUser = null;
 
 // Initialize
 init();
+initAuth();
 
 function init() {
     // Upload area click
@@ -115,7 +144,207 @@ function init() {
     resetBtn.addEventListener('click', handleReset);
 }
 
+function initAuth() {
+    if (!loginForm || !signupForm) return;
+
+    loginTab.addEventListener('click', () => toggleAuthMode('login'));
+    signupTab.addEventListener('click', () => toggleAuthMode('signup'));
+    loginForm.addEventListener('submit', handleLogin);
+    signupForm.addEventListener('submit', handleSignup);
+    logoutBtn.addEventListener('click', handleLogout);
+    if (authSection) {
+        authSection.addEventListener('click', handleAuthOverlayClick);
+    }
+    document.addEventListener('keydown', handleAuthEscape);
+
+    hideAuthModal();
+    restoreSession();
+}
+
+function toggleAuthMode(mode) {
+    clearAuthError();
+    if (mode === 'signup') {
+        signupForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        signupTab.classList.add('active');
+        loginTab.classList.remove('active');
+    } else {
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+        loginTab.classList.add('active');
+        signupTab.classList.remove('active');
+    }
+}
+
+function showAuthError(message) {
+    authError.textContent = message;
+    authError.classList.add('active');
+}
+
+function clearAuthError() {
+    authError.textContent = '';
+    authError.classList.remove('active');
+}
+
+async function handleSignup(event) {
+    event.preventDefault();
+    clearAuthError();
+    const payload = {
+        name: signupName.value.trim(),
+        email: signupEmail.value.trim(),
+        password: signupPassword.value,
+    };
+
+    try {
+        const response = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Unable to create account.');
+        }
+        signupForm.reset();
+        persistSession(data);
+    } catch (error) {
+        showAuthError(error.message);
+    }
+}
+
+async function handleLogin(event) {
+    event.preventDefault();
+    clearAuthError();
+    const payload = {
+        email: loginEmail.value.trim(),
+        password: loginPassword.value,
+    };
+
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Unable to login.');
+        }
+        loginForm.reset();
+        persistSession(data);
+    } catch (error) {
+        showAuthError(error.message);
+    }
+}
+
+function persistSession({ user, token }) {
+    currentUser = user;
+    localStorage.setItem(TOKEN_KEY, token);
+    updateAuthUi(true);
+    hideAuthModal();
+}
+
+function updateAuthUi(isAuthenticated) {
+    if (isAuthenticated && currentUser) {
+        const firstName = currentUser.name?.split(' ')[0] || currentUser.email;
+        userGreeting.textContent = `Hi, ${firstName}!`;
+        userGreeting.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
+    } else {
+        userGreeting.classList.add('hidden');
+        logoutBtn.classList.add('hidden');
+    }
+}
+
+async function restoreSession() {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+        updateAuthUi(false);
+        return;
+    }
+    try {
+        const response = await fetch('/api/auth/me', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Session expired');
+        }
+        const data = await response.json();
+        currentUser = data.user;
+        updateAuthUi(true);
+    } catch (error) {
+        clearSession();
+        updateAuthUi(false);
+    }
+}
+
+function clearSession() {
+    localStorage.removeItem(TOKEN_KEY);
+    currentUser = null;
+}
+
+function handleLogout() {
+    clearSession();
+    updateAuthUi(false);
+    hideAuthModal();
+    handleReset();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function requireLoginReminder() {
+    showError('Please login or sign up to continue.');
+    showAuthModal();
+}
+
+function isAuthenticated() {
+    return Boolean(localStorage.getItem(TOKEN_KEY));
+}
+
+function authFetch(url, options = {}) {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const headers = new Headers(options.headers || {});
+    if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+    }
+    return fetch(url, { ...options, headers });
+}
+
+function showAuthModal() {
+    if (!authSection) return;
+    authSection.classList.remove('hidden');
+    body.classList.add('auth-modal-open');
+    setTimeout(() => {
+        const focusTarget = authSection.querySelector('.auth-form:not(.hidden) input');
+        focusTarget?.focus();
+    }, 50);
+}
+
+function hideAuthModal() {
+    if (!authSection) return;
+    authSection.classList.add('hidden');
+    body.classList.remove('auth-modal-open');
+}
+
+function handleAuthOverlayClick(event) {
+    if (event.target === authSection) {
+        hideAuthModal();
+    }
+}
+
+function handleAuthEscape(event) {
+    if (event.key === 'Escape' && !authSection.classList.contains('hidden')) {
+        hideAuthModal();
+    }
+}
+
 function handleFileSelect(e) {
+    if (!isAuthenticated()) {
+        requireLoginReminder();
+        e.target.value = '';
+        return;
+    }
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
         processFile(file);
@@ -137,6 +366,11 @@ function handleDragLeave(e) {
 function handleDrop(e) {
     e.preventDefault();
     uploadArea.classList.remove('dragover');
+
+    if (!isAuthenticated()) {
+        requireLoginReminder();
+        return;
+    }
     
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
@@ -230,6 +464,11 @@ async function handleConvert() {
         showError('Please select an image first.');
         return;
     }
+
+    if (!isAuthenticated()) {
+        requireLoginReminder();
+        return;
+    }
     
     const width = widthInput.value ? parseInt(widthInput.value) : null;
     const quality = parseFloat(qualitySlider.value);
@@ -261,11 +500,18 @@ async function handleConvert() {
         formData.append('format', format);
         
         // Send request
-        const response = await fetch('/api/images/processed', {
+        const response = await authFetch('/api/images/processed', {
             method: 'POST',
             body: formData
         });
         
+        if (response.status === 401) {
+            clearSession();
+            updateAuthUi(false);
+            requireLoginReminder();
+            throw new Error('Your session expired. Please log in again.');
+        }
+
         if (!response.ok) {
             throw new Error('Failed to process image. Please try again.');
         }

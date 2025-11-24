@@ -3,129 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="css/style.css" />
     <title>Image Converter - Transform Your Images</title>
 </head>
 <body>
-    
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-image"></i> Image Converter</h1>
-            <p class="subtitle">Resize, convert, and optimize your images with ease</p>
-        </header>
-
-        <main>
-            <div class="upload-section">
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-content">
-                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <h3>Drag & Drop your image here</h3>
-                        <p>or click to browse</p>
-                        <input type="file" id="fileInput" accept="image/*" hidden>
-                    </div>
-                </div>
-                
-                <div class="preview-section" id="previewSection" style="display: none;">
-                    <div class="preview-container">
-                        <h3>Original Image</h3>
-                        <div class="image-wrapper">
-                            <img id="previewImage" alt="Preview">
-                        </div>
-                        <div class="image-info">
-                            <span id="imageName"></span>
-                            <span id="imageSize"></span>
-                        </div>
-                    </div>
-                </div>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-image"></i> Imagix
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#upload" class="nav-link">Upload</a></li>
+                <li><a href="#authSection" class="nav-link">Login</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+            </ul>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-auth">
+                <span id="userGreeting" class="nav-user hidden"></span>
+                <button type="button" class="btn-link hidden" id="logoutBtn">Logout</button>
             </div>
+        </div>
+    </nav>
 
-            <div class="controls-section" id="controlsSection" style="display: none;">
-                <h2>Conversion Settings</h2>
-                
-                <div class="control-group">
-                    <label for="formatSelect">
-                        <span class="label-text">Output Format</span>
-                        <span class="label-icon">📄</span>
-                    </label>
-                    <select id="formatSelect" class="control-input">
-                        <option value="jpeg">JPEG</option>
-                        <option value="png">PNG</option>
-                        <option value="webp">WebP</option>
-                        <option value="avif">AVIF</option>
-                        <option value="tiff">TIFF</option>
-                    </select>
+    <section class="auth-section hidden" id="authSection">
+        <div class="auth-card">
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="loginTab">Login</button>
+                <button type="button" class="auth-tab" id="signupTab">Sign Up</button>
+            </div>
+            <div id="authError" class="auth-error" role="alert"></div>
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" class="auth-input" placeholder="you@example.com" required autocomplete="email">
                 </div>
-
-                <div class="control-group">
-                    <label for="widthInput">
-                        <span class="label-text">Width (px)</span>
-                        <span class="label-icon">↔️</span>
-                    </label>
-                    <div class="input-with-reset">
-                        <input type="number" id="widthInput" class="control-input" min="1" placeholder="Auto">
-                        <button type="button" class="reset-btn" id="resetWidth" title="Reset to original">↺</button>
-                    </div>
-                    <div class="slider-container">
-                        <input type="range" id="widthSlider" class="slider" min="50" max="4000" step="50" value="800">
-                        <div class="slider-labels">
-                            <span>50px</span>
-                            <span id="widthValue">800px</span>
-                            <span>4000px</span>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
                 </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+            <form id="signupForm" class="auth-form hidden" autocomplete="off">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" class="auth-input" placeholder="Jane Doe" required autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" class="auth-input" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" class="auth-input" placeholder="Create a password" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-primary">Create Account</button>
+            </form>
+        </div>
+    </section>
 
-                <div class="control-group">
-                    <label for="qualityInput">
-                        <span class="label-text">Quality</span>
-                        <span class="label-icon">⭐</span>
-                    </label>
-                    <div class="input-with-reset">
-                        <input type="number" id="qualityInput" class="control-input" min="0.1" max="1" step="0.1" value="0.9">
-                        <span class="quality-percent">90%</span>
-                    </div>
-                    <div class="slider-container">
-                        <input type="range" id="qualitySlider" class="slider" min="0.1" max="1" step="0.05" value="0.9">
-                        <div class="slider-labels">
-                            <span>10%</span>
-                            <span id="qualityValue">90%</span>
-                            <span>100%</span>
+    <div class="container" id="appWrapper">
+        <div id="home">
+            <header>
+                <h1><i class="fas fa-image"></i> Image Converter</h1>
+                <p class="subtitle">Resize, convert, and optimize your images with ease</p>
+            </header>
+
+            <main>
+                <div class="upload-section" id="upload">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <h3>Drag & Drop your image here</h3>
+                            <p>or click to browse</p>
+                            <input type="file" id="fileInput" accept="image/*" hidden>
                         </div>
                     </div>
+                    
+                    <div class="preview-section" id="previewSection" style="display: none;">
+                        <div class="preview-container">
+                            <h3>Original Image</h3>
+                            <div class="image-wrapper">
+                                <img id="previewImage" alt="Preview">
+                            </div>
+                            <div class="image-info">
+                                <span id="imageName"></span>
+                                <span id="imageSize"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="button-group">
-                    <button type="button" class="btn btn-primary" id="convertBtn">
-                        <span class="btn-icon">✨</span>
-                        <span>Convert Image</span>
-                    </button>
-                    <button type="button" class="btn btn-secondary" id="resetBtn">
-                        <span class="btn-icon">🔄</span>
-                        <span>Reset</span>
-                    </button>
+                <div class="controls-section" id="controlsSection" style="display: none;">
+                    <h2 id="settings">Conversion Settings</h2>
+                    
+                    <div class="control-group">
+                        <label for="formatSelect">
+                            <span class="label-text">Output Format</span>
+                            <span class="label-icon">📄</span>
+                        </label>
+                        <select id="formatSelect" class="control-input">
+                            <option value="jpeg">JPEG</option>
+                            <option value="png">PNG</option>
+                            <option value="webp">WebP</option>
+                            <option value="avif">AVIF</option>
+                            <option value="tiff">TIFF</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="widthInput">
+                            <span class="label-text">Width (px)</span>
+                            <span class="label-icon">↔️</span>
+                        </label>
+                        <div class="input-with-reset">
+                            <input type="number" id="widthInput" class="control-input" min="1" placeholder="Auto">
+                            <button type="button" class="reset-btn" id="resetWidth" title="Reset to original">↺</button>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" id="widthSlider" class="slider" min="50" max="4000" step="50" value="800">
+                            <div class="slider-labels">
+                                <span>50px</span>
+                                <span id="widthValue">800px</span>
+                                <span>4000px</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="qualityInput">
+                            <span class="label-text">Quality</span>
+                            <span class="label-icon">⭐</span>
+                        </label>
+                        <div class="input-with-reset">
+                            <input type="number" id="qualityInput" class="control-input" min="0.1" max="1" step="0.1" value="0.9">
+                            <span class="quality-percent">90%</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" id="qualitySlider" class="slider" min="0.1" max="1" step="0.05" value="0.9">
+                            <div class="slider-labels">
+                                <span>10%</span>
+                                <span id="qualityValue">90%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-primary" id="convertBtn">
+                            <span class="btn-icon">✨</span>
+                            <span>Convert Image</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="resetBtn">
+                            <span class="btn-icon">🔄</span>
+                            <span>Reset</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="loading-section" id="loadingSection" style="display: none;">
-                <div class="spinner"></div>
-                <p>Processing your image...</p>
-            </div>
-
-            <div class="error-section" id="errorSection" style="display: none;">
-                <div class="error-message">
-                    <span class="error-icon">⚠️</span>
-                    <span id="errorText"></span>
+                <div class="loading-section" id="loadingSection" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Processing your image...</p>
                 </div>
-            </div>
-        </main>
 
-        <footer>
-            <p>Powered by Sharp • Fast & Reliable Image Processing</p>
-        </footer>
+                <div class="error-section" id="errorSection" style="display: none;">
+                    <div class="error-message">
+                        <span class="error-icon">⚠️</span>
+                        <span id="errorText"></span>
+                    </div>
+                </div>
+            </main>
+
+            <footer id="about">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h3><i class="fas fa-image"></i> Image Converter</h3>
+                        <p>Transform, resize, and optimize your images with ease. Fast, reliable, and free.</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Features</h4>
+                        <ul>
+                            <li><i class="fas fa-check"></i> Multiple Format Support</li>
+                            <li><i class="fas fa-check"></i> Quality Control</li>
+                            <li><i class="fas fa-check"></i> Resize Images</li>
+                            <li><i class="fas fa-check"></i> Fast Processing</li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Supported Formats</h4>
+                        <ul>
+                            <li>JPEG / JPG</li>
+                            <li>PNG</li>
+                            <li>WebP</li>
+                            <li>AVIF</li>
+                            <li>TIFF</li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Connect</h4>
+                        <div class="social-links">
+                            <a href="https://github.com/NagastyCods/" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2025 Imagix all rights reserved. Powered by <strong>Sharp</strong> • Fast & Reliable Image Processing</p>
+                </div>
+            </footer>
+        </div>
     </div>
 
     <script src="./js/script.js"></script>
